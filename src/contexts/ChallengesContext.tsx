@@ -42,9 +42,34 @@ export function ChallengesProvider({children}: ChallengesProviderProps) {
     setActiveChallenge(challenge);
   }
 
+  function completeChallenge() {
+    if (!activeChallenge)
+      return;
+
+    const { amount } = activeChallenge;
+
+    let finalExperience = currentExperience + amount;
+
+    if (finalExperience >= experienceToNextLvl) {
+      finalExperience = finalExperience - experienceToNextLvl;
+      levelUp();
+    }
+
+    setCurrentExperience(finalExperience);
+    setActiveChallenge(null);
+    setChallengesCompleted(challengesCompleted + 1);
+
+  }
+
+  function resetChallange() {
+    setActiveChallenge(null);
+  }
+
   function finishChallenge(succeded: Boolean) {
     if (!succeded) {
-      setActiveChallenge(null);
+      resetChallange();
+    } else {
+      completeChallenge();
     }
   }
 
