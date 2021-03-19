@@ -1,69 +1,47 @@
-import { GetServerSideProps } from 'next';
-import Head from 'next/head'
-import { ChallengeBox } from '../src/components/ChallengeBox';
-import { CompletedChallanges } from '../src/components/CompletedChallanges';
-import { Countdown } from '../src/components/Countdown';
-import ExperienceBar from '../src/components/ExperienceBar';
-import { Profile } from '../src/components/Profile';
-import { ChallengesProvider } from '../src/contexts/ChallengesContext';
-import { CountdownProvider } from '../src/contexts/CountdownContext';
+import { signIn, signOut, useSession } from 'next-auth/client';
 
-import styles from '../src/styles/Home.module.css';
-
-interface User {
-  level: number;
-  currentExperience: number;
-  challengesCompleted: number;
-}
-
-interface HomeProps {
-  user: User
-}
-
-export default function Home({user}: HomeProps) {
+function Loading() {
   return (
-    <ChallengesProvider 
-      level={user.level}
-      currentExperience={user.currentExperience}
-      challengesCompleted={user.challengesCompleted}
-      >
-      <div className={styles.container}>
-        <Head>
-          <link rel="shortcut icon" href="favicon.png" type="image/png/" />
-        </Head>
-        <ExperienceBar />
-        
-        <CountdownProvider>
-          <section>
-              <div>
-                <Profile />
-                <CompletedChallanges />
-                <Countdown />
-              </div>
-              <div>
-                <ChallengeBox />
-              </div>
-          </section>
-        </CountdownProvider>
-
-      </div>
-    </ChallengesProvider>
-  )
+    <div>
+      Carregando...
+    </div>
+  );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
+export default function Login() {
 
-  const { level, currentExperience, challengesCompleted } = ctx.req.cookies;
+  const [session, loading] = useSession();
 
-  const user: User = {
-    level: Number(level),
-    currentExperience: Number(currentExperience),
-    challengesCompleted: Number(challengesCompleted)
-  };
-
-  return {
-    props: {
-      user
-    }
+  if (loading) {
+    return (<Loading />)
   }
+
+  console.log(session);
+
+  return (
+    <div>
+      <header>
+
+      </header>
+      <main>
+        { !session ? (
+        <div>
+          <button onClick={(): Promise<void> => signIn('github')}>Login</button>
+        </div>
+        )
+          :
+          (
+            <div>
+              <div className="session">
+                {session.user.email} - {JSON.stringify(session)} - {session.accessToken}
+              </div>
+              <div className="logout">
+                <button onClick={(): Promise<void> => signOut()}>Logout</button>
+              </div>
+            </div>
+          )
+        }
+      </main>
+    </div>
+  )
 }
